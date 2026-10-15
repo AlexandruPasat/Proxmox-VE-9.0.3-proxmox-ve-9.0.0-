@@ -1,17 +1,30 @@
 # VM Setup
 
-## Current workload pattern
+## Current virtual machines
 
-The node hosts production/test virtual machines including Windows and Linux guests.
+The captured production host has six running QEMU virtual machines and no LXC containers.
 
-Known example:
+| VMID | Name | RAM | Boot disk |
+|---|---|---:|---:|
+| 100 | `Windows-10-Pro-H` | 32 GB | 300 GB |
+| 101 | `badge-equipment-pv-webserver` | 4 GB | 32 GB |
+| 102 | `AlexLinux` | 4 GB | 32 GB |
+| 103 | `Zabbix` | 16 GB | 300 GB |
+| 104 | `DataBaseLinuxVM` | 8 GB | 150 GB |
+| 105 | `Windows-HyperV` | 32 GB | 250 GB |
 
-- VMID `100`
-- Windows 10 Pro
+## Storage placement
+
+The current environment uses both ZFS pools for VM disks.
+
+- VM 100 is stored on `vm-storage`.
+- VMIDs 101-105 have disks present under `rpool/data`.
+
+This is a mixed state. The intended long-term design is to keep the hypervisor/system workload on the SSD mirror while moving VM workloads to dedicated VM storage where appropriate.
 
 ## Resource sizing
 
-VM sizing should be based on workload requirements and host capacity. Avoid excessive overcommitment without monitoring.
+VM sizing should be based on workload requirements and actual monitoring data. Avoid excessive overcommitment without validating CPU, RAM and storage behavior.
 
 Typical parameters:
 
@@ -21,9 +34,9 @@ Typical parameters:
 - storage target
 - bridge
 - NIC model
-- firmware (BIOS/UEFI)
+- BIOS/UEFI firmware
 
-## VM configuration inspection
+## VM inspection
 
 List VMs:
 
@@ -31,7 +44,7 @@ List VMs:
 qm list
 ```
 
-Show a VM config:
+Inspect a VM configuration:
 
 ```bash
 qm config <VMID>
@@ -45,8 +58,6 @@ qm config 100
 
 ## VM lifecycle
 
-Common commands:
-
 ```bash
 qm start <VMID>
 qm shutdown <VMID>
@@ -57,7 +68,7 @@ qm status <VMID>
 
 ## Networking
 
-VM NICs are normally connected to a Linux bridge such as `vmbr0`.
+VM NICs are attached to `vmbr0` in the captured environment.
 
 Useful validation:
 
@@ -67,4 +78,4 @@ qm config <VMID> | grep -E 'net|bridge'
 
 ## Documentation rule
 
-When exporting VM configs to Git, review and sanitize any potentially sensitive metadata before commit.
+Do not commit guest passwords, cloud-init secrets, API credentials or other sensitive metadata from VM configuration files.
