@@ -1,19 +1,14 @@
 # Backup and Recovery
 
-## Objective
+## Captured state
 
-Backups should protect both guest workloads and the Proxmox host configuration needed to rebuild the environment.
+The live export did not contain any configured jobs in `/etc/pve/jobs.cfg` at the time of capture.
 
-## VM backups
+That means no Proxmox backup job was visible in this export. This does not prove that no external backup process exists, but no scheduled PVE job was present in the captured configuration.
 
-VM backups should be stored outside the primary VM storage whenever possible.
+## Recommended backup scope
 
-Useful checks:
-
-```bash
-vzdump --help
-pvesm status
-```
+Protect both guest workloads and the Proxmox host configuration needed to rebuild the environment.
 
 For each critical VM, document:
 
@@ -23,6 +18,16 @@ For each critical VM, document:
 - retention
 - last successful backup
 - restore test date
+
+## VM backup checks
+
+```bash
+vzdump --help
+pvesm status
+cat /etc/pve/jobs.cfg
+```
+
+VM backups should be stored outside the primary VM storage whenever possible.
 
 ## Host configuration backup
 
@@ -35,9 +40,9 @@ Important configuration areas include:
 /etc/zabbix/zabbix_agent2.d/
 ```
 
-Do not publish raw `/etc/pve/priv/` content or any secret-bearing files.
+Never publish raw `/etc/pve/priv/` contents or any secret-bearing files.
 
-## ZFS
+## ZFS validation
 
 Before storage maintenance:
 
@@ -47,17 +52,17 @@ zpool list
 zfs list
 ```
 
-Validate backups before replacing disks or modifying vdev topology.
+At the time of capture both `rpool` and `vm-storage` were ONLINE and their latest scrub completed with zero errors.
 
 ## Recovery priorities
 
 1. Restore management connectivity.
-2. Validate storage pools.
-3. Restore Proxmox configuration.
+2. Validate ZFS pools.
+3. Restore Proxmox host configuration.
 4. Restore critical VMs.
-5. Validate networking and services.
-6. Re-enable monitoring.
+5. Validate networking and guest services.
+6. Re-enable and validate monitoring.
 
-## Restore validation
+## Restore testing
 
-A backup is not considered reliable until a restore has been tested. Record restore tests and any issues encountered.
+A backup is not considered reliable until a restore has been tested. Record restore tests, recovery time and any manual dependencies discovered during testing.
