@@ -1,0 +1,33 @@
+# Secrets and credentials
+*.key
+*.pem
+*.pfx
+*.p12
+*.crt
+*.cer
+.env
+.env.*
+*secret*
+*password*
+credentials*
+secrets*
+
+# Backups and dumps
+*.bak
+*.backup
+*.dump
+*.sql
+*.tar
+*.tgz
+*.gz
+
+# Logs and OS files
+*.log
+Thumbs.db
+.DS_Store
+
+# Proxmox sensitive exports
+priv/
+ssh_host_*_key
+id_rsa
+id_ed25519
